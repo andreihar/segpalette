@@ -1,0 +1,21 @@
+:root {
+  --navbar-height: 60px;
+  --footer-height: 60px;
+}
+
+html {
+  scroll-padding-top: var(--navbar-height);
+  margin-top: var(--navbar-height);
+}
+
+.navbar {
+  height: var(--navbar-height);
+}
+
+.footer {
+  height: var(--footer-height);
+}
+
+.min-height {
+  min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
+}
