@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Stage, Layer, Image as KonvaImage, Rect } from 'react-konva';
-import Konva from 'konva';
-import useImage from 'use-image';
 import { generateColourPalette } from '../utils/generateColourPalette';
 import { useSelector, useDispatch } from 'react-redux';
 import { setPalettes } from '../redux/slices/paletteSlice';
@@ -21,6 +19,8 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
   const [masks, setMasks] = useState([]);
   const [selectedSegmentation, setSelectedSegmentation] = useState(null);
   const [jsonFile, setJsonFile] = useState(null);
+  const [overlaySegmentations, setOverlaySegmentations] = useState(null);
+  const [overlaySegmentationsOpen, setOverlaySegmentationsOpen] = useState(true);
 
   // Refs
   const maskRefs = useRef([]);
@@ -98,39 +98,21 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
   // Generate Palette
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  const maskCanvas = document.createElement('canvas');
-  const maskContext = maskCanvas.getContext('2d');
 
   useEffect(() => {
     if (selectedSegmentation) {
-      canvas.width = selectedImage.width;
-      canvas.height = selectedImage.height;
-      context.drawImage(selectedImage, 0, 0, selectedImage.width, selectedImage.height);
-
-      maskCanvas.width = selectedSegmentation.width;
-      maskCanvas.height = selectedSegmentation.height;
-      maskContext.drawImage(selectedSegmentation, 0, 0, selectedSegmentation.width, selectedSegmentation.height);
-
-      const maskImageData = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-      for (let i = 0; i < maskImageData.data.length; i += 4) {
-        maskImageData.data[i] = maskImageData.data[i + 1] = maskImageData.data[i + 2] = 0;
-        maskImageData.data[i + 3] = maskImageData.data[i + 3] > 0 ? 255 : 0;
-      }
-      maskContext.putImageData(maskImageData, 0, 0);
-
-      context.globalCompositeOperation = 'destination-in';
-      context.drawImage(maskCanvas, 0, 0, maskCanvas.width, maskCanvas.height);
-
+      canvas.width = selectedSegmentation.width;
+      canvas.height = selectedSegmentation.height;
+      context.drawImage(selectedSegmentation, 0, 0, selectedSegmentation.width, selectedSegmentation.height);
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
       const palette = generateColourPalette(imageData);
       console.log('Colour palette:', palette);
       dispatch(setPalettes(palette));
     }
-  }, [selectedSegmentation, selectedImage, dispatch]);
+  }, [selectedSegmentation, dispatch]);
 
   // Handle mask click
-  const handleMaskClick = (event, index) => {
+  const handleMaskClick = (event) => {
     const { x, y } = event.target.getRelativePointerPosition();
     for (let index = updatedImages.current.length - 1; index >= 0; index--) {
       const mask = updatedImages.current[index];
@@ -140,6 +122,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
       if (context.getImageData(Math.floor(x), Math.floor(y), 1, 1).data[3] !== 0) {
         console.log(`Mask ${index} clicked`);
         setSelectedSegmentation(mask);
+        setOverlaySegmentationsOpen(false);
         setOverlayVisible(true); // Set overlayVisible to true when a mask is clicked
         break;
       }
@@ -200,9 +183,58 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
     }
   }, [masks, selectedImage]);
 
+  // Create overlay of all segmentations
+  useEffect(() => {
+    if (selectedImage && selectedImage.complete && masks.length > 0) {
+      const overlayCanvas = document.createElement('canvas');
+      overlayCanvas.width = masks[0].width;
+      overlayCanvas.height = masks[0].height;
+      const overlayContext = overlayCanvas.getContext('2d');
+
+      masks.forEach((mask) => {
+        if (mask.complete) {
+          const { canvas, context } = createMaskCanvas(mask);
+          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          const randomColour = {r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256)};
+
+          // 0 0 0 -> transparent
+          // 255 255 255 -> semi-transparent and give it the random colour
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            if (imageData.data[i] === 255 && imageData.data[i + 1] === 255 && imageData.data[i + 2] === 255) {
+              imageData.data[i] = randomColour.r;
+              imageData.data[i + 1] = randomColour.g;
+              imageData.data[i + 2] = randomColour.b;
+              imageData.data[i + 3] = 128; // semi-transparent
+            } else {
+              imageData.data[i + 3] = 0; // transparent
+            }
+          }
+          context.putImageData(imageData, 0, 0);
+          overlayContext.drawImage(canvas, 0, 0);
+        }
+      });
+
+      const newImage = new Image();
+      newImage.onload = () => {
+        setOverlaySegmentations(newImage);
+      };
+      newImage.src = overlayCanvas.toDataURL();
+    }
+  }, [masks, selectedImage]);
+
+  const toggleOverlay = () => {
+    setOverlaySegmentationsOpen(!overlaySegmentationsOpen);
+  };
+
   return (
     selectedImage ? (
       <>
+        {overlaySegmentations && (
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="checkbox" role="switch" id="customSwitch1" checked={overlaySegmentationsOpen} onChange={toggleOverlay} />
+            <label className="form-check-label" htmlFor="customSwitch1">{overlaySegmentationsOpen ? 'Close Overlay' : 'Open Overlay'}</label>
+          </div>
+        )}
         <Modal isOpen={isModalOpen} style={{ content: { top: '50%', left: '50%', right: 'auto', bottom: 'auto', marginRight: '-50%', transform: 'translate(-50%, -50%)', width: '400px' } }}>
           <div className="p-3 rounded text-center">
             {isLoading ? (
@@ -218,32 +250,33 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
           </div>
         </Modal>
         <Stage width={window.innerWidth} height={window.innerHeight} ref={stageRef}>
-        <Layer>
-          {selectedImage && <KonvaImage image={selectedImage} />}
-          {masks.map((mask, index) => mask && (
-            <KonvaImage
-              key={index}
-              ref={maskRefs.current[index] = React.createRef()}
-              globalCompositeOperation='source-over'
-              onClick={(event) => handleMaskClick(event, index)}
-            />
-          ))}
-          {overlayVisible && (
-            <>
-              <Rect
-                width={window.innerWidth}
-                height={window.innerHeight}
-                fill='black'
-                opacity={0.5}
-              />
-              {selectedSegmentation && <KonvaImage
-                image={selectedSegmentation}
+          <Layer>
+            {selectedImage && <KonvaImage image={selectedImage} />}
+            {masks.map((mask, index) => mask && (
+              <KonvaImage
+                key={index}
+                ref={maskRefs.current[index] = React.createRef()}
                 globalCompositeOperation='source-over'
-              />}
-            </>
-          )}
-        </Layer>
-      </Stage>
+                onClick={(event) => handleMaskClick(event, index)}
+              />
+            ))}
+            {overlayVisible && (
+              <>
+                <Rect
+                  width={window.innerWidth}
+                  height={window.innerHeight}
+                  fill='black'
+                  opacity={0.5}
+                />
+                {selectedSegmentation && <KonvaImage
+                  image={selectedSegmentation}
+                  globalCompositeOperation='source-over'
+                />}
+              </>
+            )}
+            {overlaySegmentationsOpen && overlaySegmentations && <KonvaImage image={overlaySegmentations} listening={false} />}
+          </Layer>
+        </Stage>
       </>
     ) : (
       <main className="d-flex justify-content-center align-items-center min-height">
