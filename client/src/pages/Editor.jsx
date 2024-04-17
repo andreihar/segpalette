@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import Canvas from "../components/Canvas";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -6,8 +7,7 @@ import Footer from "../components/Footer";
 
 function Editor() {
   const stageRef = useRef();
-  const [overlayVisible, setOverlayVisible] = useState(false);
-  const [jsonData, setJsonData] = useState(null);
+  const jsonData = useSelector(state => state.editor.jsonData);
 
   const exportStage = () => {
     const dataUrl = stageRef.current.toDataURL();
@@ -34,14 +34,14 @@ function Editor() {
 
   return (
     <>
-      <Navbar exportStage={exportStage} downloadJson={downloadJson} jsonData={jsonData} />
+      <Navbar exportStage={exportStage} downloadJson={downloadJson} />
       <div className="container-fluid min-height">
         <div className="row h-100">
           <div className="col-3">
-            <Sidebar setOverlayVisible={setOverlayVisible} overlayVisible={overlayVisible} />
+            <Sidebar />
           </div>
           <div className="col-8">
-            <Canvas stageRef={stageRef} setOverlayVisible={setOverlayVisible} overlayVisible={overlayVisible} setJsonData={setJsonData} jsonData={jsonData} />
+            <Canvas stageRef={stageRef} />
           </div>
         </div>
       </div>

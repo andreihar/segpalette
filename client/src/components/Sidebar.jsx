@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { HuePicker } from 'react-color';
 import { useSelector, useDispatch } from 'react-redux';
 import { setPalettes } from '../redux/slices/paletteSlice';
+import { setOverlayVisible } from '../redux/slices/editorSlice';
 
-function Sidebar({ overlayVisible, setOverlayVisible }) {
+function Sidebar() {
   const palettes = useSelector((state) => state.palette.palettes);
+  const overlayVisible = useSelector((state) => state.editor.overlayVisible);
   const dispatch = useDispatch();
 
   const [selectedPaletteId, setSelectedPaletteId] = useState(null);
@@ -18,11 +20,11 @@ function Sidebar({ overlayVisible, setOverlayVisible }) {
   };
 
   const handleFinishEditing = () => {
-    setOverlayVisible(false);
+    dispatch(setOverlayVisible(false));
   };
 
   const handleCancelEditing = () => {
-    setOverlayVisible(false);
+    dispatch(setOverlayVisible(false));
   };
 
   return (

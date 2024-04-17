@@ -1,7 +1,10 @@
 import LogoLong from "../assets/png/logo-long.png";
 import SFULogo from "../assets/png/sfu-logo.png";
+import { useSelector } from 'react-redux';
 
-function Navbar({ exportStage, downloadJson, jsonData }) {
+function Navbar({ exportStage, downloadJson }) {
+  const jsonData = useSelector(state => state.editor.jsonData);
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
       <div className="container">
@@ -41,7 +44,6 @@ function Navbar({ exportStage, downloadJson, jsonData }) {
         </div>
       </div>
     </nav>
-
   );
 }
 

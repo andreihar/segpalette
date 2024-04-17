@@ -3,15 +3,18 @@ import { Stage, Layer, Image as KonvaImage, Rect } from 'react-konva';
 import { generateColourPalette } from '../utils/generateColourPalette';
 import { useSelector, useDispatch } from 'react-redux';
 import { setPalettes } from '../redux/slices/paletteSlice';
+import { setOverlayVisible, setJsonData } from '../redux/slices/editorSlice';
 import { getMasks, getSegmentation } from '../services/PyService';
 import StyledDropzone from './StyledDropzone';
 import Modal from 'react-modal';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, jsonData }) {
+function Canvas({ stageRef }) {
   // Redux state
   const palettes = useSelector((state) => state.palette.palettes);
+  const overlayVisible = useSelector((state) => state.editor.overlayVisible);
+  const jsonData = useSelector((state) => state.editor.jsonData);
   const dispatch = useDispatch();
 
   // Local state
@@ -36,7 +39,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, json
       reader.onload = function (e) {
         try {
           const json = JSON.parse(e.target.result);
-          setJsonData(json);
+          dispatch(setJsonData(json));
         } catch (error) {
           console.error('Error parsing JSON file:', error);
           toast.error('Error parsing JSON file. Please try again');
@@ -54,7 +57,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, json
     console.log("Generating segmentation...");
     getSegmentation(selectedImage.src)
       .then(json => {
-        setJsonData(json);
+        dispatch(setJsonData(json));
         setIsLoading(false);
       })
       .catch(error => {
@@ -138,7 +141,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, json
         console.log(`Mask ${index} clicked`);
         setSelectedSegmentation(mask);
         setOverlaySegmentationsOpen(false);
-        setOverlayVisible(true); // Set overlayVisible to true when a mask is clicked
+        dispatch(setOverlayVisible(true));
         break;
       }
     }
@@ -245,7 +248,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, json
         <>
           {overlaySegmentations && (
             <div className="form-check form-switch">
-              <input className="form-check-input" type="checkbox" role="switch" id="customSwitch1" checked={overlaySegmentationsOpen} onChange={toggleOverlay} />
+              <input className="form-check-input" type="checkbox" role="switch" id="customSwitch1" checked={overlaySegmentationsOpen} onChange={toggleOverlay} disabled={overlayVisible} />
               <label className="form-check-label" htmlFor="customSwitch1">{overlaySegmentationsOpen ? 'Close Overlay' : 'Open Overlay'}</label>
             </div>
           )}
