@@ -6,8 +6,10 @@ import { setPalettes } from '../redux/slices/paletteSlice';
 import { getMasks, getSegmentation } from '../services/PyService';
 import StyledDropzone from './StyledDropzone';
 import Modal from 'react-modal';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
+function Canvas({ stageRef, overlayVisible, setOverlayVisible, setJsonData, jsonData }) {
   // Redux state
   const palettes = useSelector((state) => state.palette.palettes);
   const dispatch = useDispatch();
@@ -18,7 +20,6 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
   const [isLoading, setIsLoading] = useState(false);
   const [masks, setMasks] = useState([]);
   const [selectedSegmentation, setSelectedSegmentation] = useState(null);
-  const [jsonFile, setJsonFile] = useState(null);
   const [overlaySegmentations, setOverlaySegmentations] = useState(null);
   const [overlaySegmentationsOpen, setOverlaySegmentationsOpen] = useState(true);
 
@@ -28,24 +29,38 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
 
   // JSON file upload
   const onJsonFileChange = (event) => {
-    setJsonFile(event.target.files[0]);
-    if (event.target.files[0]) {
+    const file = event.target.files[0];
+    if (file) {
       setIsLoading(true);
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const json = JSON.parse(e.target.result);
+          setJsonData(json);
+        } catch (error) {
+          console.error('Error parsing JSON file:', error);
+          toast.error('Error parsing JSON file. Please try again');
+          setSelectedImage(null);
+          setIsLoading(false);
+        }
+      };
+      reader.readAsText(file);
     }
   };
 
   // Produce JSON segmentation with SAM
   const generateSegmentation = () => {
+    setIsLoading(true);
     console.log("Generating segmentation...");
-    setIsModalOpen(false);
-
-    getSegmentation(selectedImage)
+    getSegmentation(selectedImage.src)
       .then(json => {
-        setJsonFile(json);
+        setJsonData(json);
         setIsLoading(false);
       })
       .catch(error => {
         console.error("Error processing image", error);
+        toast.error('Error processing image. Please try again');
+        setSelectedImage(null);
         setIsLoading(false);
       });
   };
@@ -131,30 +146,27 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
 
   // Handle JSON file load
   useEffect(() => {
-    if (jsonFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const data = JSON.parse(reader.result);
-        getMasks(data)
-          .then(base64Images => {
-            const loadedImages = base64Images.map((base64Image, index) => {
-              const img = new Image();
-              img.src = `data:image/png;base64,${base64Image}`;
-              const ref = React.createRef();
-              maskRefs.current[index] = ref;
-              return img;
-            });
-            setMasks(loadedImages);
-          })
-          .catch(error => console.error(error))
-          .finally(() => {
-            setIsLoading(false);
-            setIsModalOpen(false);
+    if (jsonData) {
+      getMasks(jsonData)
+        .then(base64Images => {
+          const loadedImages = base64Images.map((base64Image, index) => {
+            const img = new Image();
+            img.src = `data:image/png;base64,${base64Image}`;
+            const ref = React.createRef();
+            maskRefs.current[index] = ref;
+            return img;
           });
-      };
-      reader.readAsText(jsonFile);
+          setMasks(loadedImages);
+        })
+        .catch(error => {
+          toast.error('Error processing JSON file. Please make sure that the JSON file is a COCO segmentation file.');
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsModalOpen(false);
+        });
     }
-  }, [selectedImage, jsonFile]);
+  }, [selectedImage, jsonData]);
 
   // Handle mask load
   useEffect(() => {
@@ -195,7 +207,7 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
         if (mask.complete) {
           const { canvas, context } = createMaskCanvas(mask);
           const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-          const randomColour = {r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256)};
+          const randomColour = { r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) };
 
           // 0 0 0 -> transparent
           // 255 255 255 -> semi-transparent and give it the random colour
@@ -227,62 +239,65 @@ function Canvas({ stageRef, overlayVisible, setOverlayVisible }) {
   };
 
   return (
-    selectedImage ? (
-      <>
-        {overlaySegmentations && (
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="checkbox" role="switch" id="customSwitch1" checked={overlaySegmentationsOpen} onChange={toggleOverlay} />
-            <label className="form-check-label" htmlFor="customSwitch1">{overlaySegmentationsOpen ? 'Close Overlay' : 'Open Overlay'}</label>
-          </div>
-        )}
-        <Modal isOpen={isModalOpen} style={{ content: { top: '50%', left: '50%', right: 'auto', bottom: 'auto', marginRight: '-50%', transform: 'translate(-50%, -50%)', width: '400px' } }}>
-          <div className="p-3 rounded text-center">
-            {isLoading ? (
-              <h2>Loading...</h2>
-            ) : (
-              <>
-                <h2 className="mb-3">Select an option</h2>
-                <button className="btn btn-primary mb-2" onClick={() => document.getElementById('json-upload').click()}>Upload COCO Segmentation file</button>
-                <input type="file" id="json-upload" accept=".json" onChange={onJsonFileChange} style={{ display: 'none' }} />
-                <button className="btn btn-secondary" onClick={() => { console.log("Chosen"); setIsModalOpen(false); }}>Generate segmentation</button>
-              </>
-            )}
-          </div>
-        </Modal>
-        <Stage width={window.innerWidth} height={window.innerHeight} ref={stageRef}>
-          <Layer>
-            {selectedImage && <KonvaImage image={selectedImage} />}
-            {masks.map((mask, index) => mask && (
-              <KonvaImage
-                key={index}
-                ref={maskRefs.current[index] = React.createRef()}
-                globalCompositeOperation='source-over'
-                onClick={(event) => handleMaskClick(event, index)}
-              />
-            ))}
-            {overlayVisible && (
-              <>
-                <Rect
-                  width={window.innerWidth}
-                  height={window.innerHeight}
-                  fill='black'
-                  opacity={0.5}
-                />
-                {selectedSegmentation && <KonvaImage
-                  image={selectedSegmentation}
+    <>
+      <ToastContainer />
+      {selectedImage ? (
+        <>
+          {overlaySegmentations && (
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox" role="switch" id="customSwitch1" checked={overlaySegmentationsOpen} onChange={toggleOverlay} />
+              <label className="form-check-label" htmlFor="customSwitch1">{overlaySegmentationsOpen ? 'Close Overlay' : 'Open Overlay'}</label>
+            </div>
+          )}
+          <Modal isOpen={isModalOpen} style={{ content: { top: '50%', left: '50%', right: 'auto', bottom: 'auto', marginRight: '-50%', transform: 'translate(-50%, -50%)', width: '400px' } }}>
+            <div className="p-3 rounded text-center">
+              {isLoading ? (
+                <h2>Loading...</h2>
+              ) : (
+                <>
+                  <h2 className="mb-3">Select an option</h2>
+                  <button className="btn btn-primary mb-2" onClick={() => document.getElementById('json-upload').click()}>Upload COCO Segmentation file</button>
+                  <input type="file" id="json-upload" accept=".json" onChange={onJsonFileChange} style={{ display: 'none' }} />
+                  <button className="btn btn-secondary" onClick={generateSegmentation}>Generate segmentation</button>
+                </>
+              )}
+            </div>
+          </Modal>
+          <Stage width={window.innerWidth} height={window.innerHeight} ref={stageRef}>
+            <Layer>
+              {selectedImage && <KonvaImage image={selectedImage} />}
+              {masks.map((mask, index) => mask && (
+                <KonvaImage
+                  key={index}
+                  ref={maskRefs.current[index] = React.createRef()}
                   globalCompositeOperation='source-over'
-                />}
-              </>
-            )}
-            {overlaySegmentationsOpen && overlaySegmentations && <KonvaImage image={overlaySegmentations} listening={false} />}
-          </Layer>
-        </Stage>
-      </>
-    ) : (
-      <main className="d-flex justify-content-center align-items-center min-height">
-        <StyledDropzone onDrop={onDrop} />
-      </main>
-    )
+                  onClick={(event) => handleMaskClick(event, index)}
+                />
+              ))}
+              {overlayVisible && (
+                <>
+                  <Rect
+                    width={window.innerWidth}
+                    height={window.innerHeight}
+                    fill='black'
+                    opacity={0.5}
+                  />
+                  {selectedSegmentation && <KonvaImage
+                    image={selectedSegmentation}
+                    globalCompositeOperation='source-over'
+                  />}
+                </>
+              )}
+              {overlaySegmentationsOpen && overlaySegmentations && <KonvaImage image={overlaySegmentations} listening={false} />}
+            </Layer>
+          </Stage>
+        </>
+      ) : (
+        <main className="d-flex justify-content-center align-items-center min-height">
+          <StyledDropzone onDrop={onDrop} />
+        </main>
+      )}
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 import LogoLong from "../assets/png/logo-long.png";
 import SFULogo from "../assets/png/sfu-logo.png";
 
-function Navbar({ exportStage }) {
+function Navbar({ exportStage, downloadJson, jsonData }) {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
       <div className="container">
@@ -21,6 +21,11 @@ function Navbar({ exportStage }) {
                 <li>
                   <a className="dropdown-item" href="#" onClick={exportStage}>Export Image</a>
                 </li>
+                { jsonData && (
+                <li>
+                  <a className="dropdown-item" href="#" onClick={downloadJson}>Export Segmentation</a>
+                </li>
+                )}
                 <hr />
                 <li>
                   <a className="dropdown-item" href="#">Load Sample Image</a>
