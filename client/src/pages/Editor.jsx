@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 function Editor() {
   const stageRef = useRef();
   const jsonData = useSelector(state => state.editor.jsonData);
+  const [loadMachuPicchu, setLoadMachuPicchu] = useState(null);
 
   const exportStage = () => {
     const dataUrl = stageRef.current.toDataURL();
@@ -34,14 +35,14 @@ function Editor() {
 
   return (
     <>
-      <Navbar exportStage={exportStage} downloadJson={downloadJson} />
+      <Navbar exportStage={exportStage} downloadJson={downloadJson} loadMachuPicchu={loadMachuPicchu} />
       <div className="container-fluid min-height">
         <div className="row h-100">
           <div className="col-3">
             <Sidebar />
           </div>
           <div className="col-8">
-            <Canvas stageRef={stageRef} />
+            <Canvas stageRef={stageRef} setLoadMachuPicchu={setLoadMachuPicchu} />
           </div>
         </div>
       </div>

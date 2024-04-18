@@ -9,8 +9,10 @@ import StyledDropzone from './StyledDropzone';
 import Modal from 'react-modal';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import machuPicchuImage from '../assets/machu.jpg';
+import machuPicchuJson from '../assets/machu.json';
 
-function Canvas({ stageRef }) {
+function Canvas({ stageRef, setLoadMachuPicchu }) {
   // Redux state
   const palettes = useSelector((state) => state.palette.palettes);
   const overlayVisible = useSelector((state) => state.editor.overlayVisible);
@@ -67,6 +69,30 @@ function Canvas({ stageRef }) {
         setIsLoading(false);
       });
   };
+
+  // Default Data
+  const loadMachuPicchu = () => {
+    const img = new Image();
+    img.onload = () => {
+      setIsLoading(true);
+      setIsModalOpen(true);
+      setSelectedImage(img);
+      try {
+        dispatch(setJsonData(machuPicchuJson));
+      } catch (error) {
+        console.error('Error parsing JSON file:', error);
+        toast.error('Error parsing JSON file. Please try again');
+        setSelectedImage(null);
+        setIsLoading(false);
+        setIsModalOpen(false);
+      }
+    };
+    img.src = machuPicchuImage;
+  };
+
+  useEffect(() => {
+    setLoadMachuPicchu(() => loadMachuPicchu);
+  }, []);
 
   // Handle file drop
   const onDrop = useCallback((acceptedFiles) => {
