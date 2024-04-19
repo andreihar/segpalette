@@ -1,5 +1,7 @@
 git+https://github.com/facebookresearch/segment-anything.git
 numpy
+torch
+torchvision
 opencv-python
 pycocotools
 onnxruntime
