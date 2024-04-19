@@ -178,7 +178,6 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
   // Handle JSON file load
   useEffect(() => {
     if (jsonData) {
-      console.log("Hello world blud")
       getMasks(jsonData)
         .then(base64Images => {
           const loadedImages = base64Images.map((base64Image, index) => {

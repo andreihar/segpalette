@@ -2,10 +2,11 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const paletteSlice = createSlice({
   name: 'palette',
-  initialState: { palettes: [], selectedColour: null },
+  initialState: { palettes: { index: 0, palettes: [] }, selectedColour: null },
   reducers: {
     setPalettes: (state, action) => {
-      state.palettes = action.payload.slice(1);
+      state.palettes.index = action.payload.index;
+      state.palettes.palettes = action.payload.palettes;
     },
     setSelectedColour: (state, action) => {
       state.selectedColour = action.payload;

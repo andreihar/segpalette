@@ -5,7 +5,7 @@ import { setPalettes } from '../redux/slices/paletteSlice';
 import { setOverlayVisible } from '../redux/slices/editorSlice';
 
 function Sidebar() {
-  const palettes = useSelector((state) => state.palette.palettes);
+  const palettes = useSelector((state) => state.palette.palettes.palettes);
   const overlayVisible = useSelector((state) => state.editor.overlayVisible);
   const dispatch = useDispatch();
 
@@ -16,7 +16,7 @@ function Sidebar() {
   const handleColourChange = (colourEvent) => {
     const newPalettes = [...palettes];
     newPalettes[selectedPaletteId] = colourEvent.hex;
-    dispatch(setPalettes(newPalettes));
+    dispatch(setPalettes({ index: state.palette.palettes.index, palettes: newPalettes })); 
   };
 
   const handleFinishEditing = () => {

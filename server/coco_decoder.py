@@ -7,7 +7,7 @@ import cv2
 def decode():
   data = request.get_json()
   binary_masks = []
-  for item in enumerate(data):
+  for i, item in enumerate(data):
     binary_mask = mask.decode(item['segmentation'])
     binary_mask = (binary_mask * 255).astype(np.uint8)
     _, encoded_image = cv2.imencode('.png', binary_mask)

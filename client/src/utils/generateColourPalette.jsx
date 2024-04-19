@@ -1,20 +1,18 @@
 export const generateColourPalette = (imageData) => {
-
-
   // Initiate array to store the colour of every pixel
   const colours = [];
 
   // Save colour value of each pixel into colours
   for (let i = 0; i < imageData.data.length; i += 4) {
     //const colour = `${imageData.data[i]},${imageData.data[i + 1]},${imageData.data[i + 2]}`;
-    const colour = [imageData.data[i], imageData.data[i+1], imageData.data[i+2]];
+    const colour = [imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]];
     colours.push(colour);
-      }
-  
+  }
+
   // Calculate distance between two colours
   function distance(col1, col2) {
     let sum = 0;
-    for (let i = 0; i < col1.length; i ++) {
+    for (let i = 0; i < col1.length; i++) {
       //console.log(col1[i]);
       sum += Math.pow(col1[i] - col2[i], 2);
     }
@@ -22,8 +20,8 @@ export const generateColourPalette = (imageData) => {
   }
 
   // Check if color is black, return true if it is not black
-  function notBlack(colour){
-    for(let i = 0; i < colour.length; i++){
+  function notBlack(colour) {
+    for (let i = 0; i < colour.length; i++) {
       if (colour[i] !== 0) {
         return true;
       }
@@ -46,7 +44,7 @@ export const generateColourPalette = (imageData) => {
 
   function assignClusters(colours, centroids) {
     const clusters = new Array(centroids.length).fill().map(() => []);
-    const clusterIndex = []
+    const clusterIndex = [];
     colours.forEach(colour => {
       // Find the index of the closest centroid
       const distances = centroids.map(centroid => distance(colour, centroid));
@@ -55,7 +53,7 @@ export const generateColourPalette = (imageData) => {
       clusters[closestCentroidIndex].push(colour);
       clusterIndex.push(closestCentroidIndex);
     });
-    return {clusters, clusterIndex};
+    return { clusters, clusterIndex };
   }
 
   function updateCentroids(clusters) {
@@ -74,7 +72,7 @@ export const generateColourPalette = (imageData) => {
     let finalClusterIndex = null;
 
     while (iteration < maxIterations) {
-      const {clusters, clusterIndex} = assignClusters(colours, centroids);
+      const { clusters, clusterIndex } = assignClusters(colours, centroids);
 
       // Check for convergence
       if (JSON.stringify(clusters) === JSON.stringify(prevClusters)) {
@@ -111,20 +109,13 @@ export const generateColourPalette = (imageData) => {
   }
 
   const { centroids: centroids, finalClusterIndex } = kMeans(colours, 6);
-  
-  // Print out finalClusterIndex
-  //console.log('Cluster Index:');
-  //console.log(finalClusterIndex);
 
-  const palette = [];
+  const palettes = [];
+  const index = finalClusterIndex;
 
-  // Push finalClusterIndex to palette before the colours.
-  // When the colors are read, they will ignore the 0 index
-  palette.push(finalClusterIndex);
-
-  for (let i = 0; i < centroids.length; i++){
-    palette.push(rgbToHex(centroids[i]));
+  for (let i = 0; i < centroids.length; i++) {
+    palettes.push(rgbToHex(centroids[i]));
   }
-  
-  return palette;
+
+  return { index, palettes };
 };
