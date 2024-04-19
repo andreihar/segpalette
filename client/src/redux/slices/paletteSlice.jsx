@@ -5,7 +5,7 @@ const paletteSlice = createSlice({
   initialState: { palettes: [], selectedColour: null },
   reducers: {
     setPalettes: (state, action) => {
-      state.palettes = action.payload;
+      state.palettes = action.payload.slice(1);
     },
     setSelectedColour: (state, action) => {
       state.selectedColour = action.payload;
