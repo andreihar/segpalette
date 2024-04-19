@@ -1,5 +1,9 @@
 git+https://github.com/facebookresearch/segment-anything.git
+numpy
 opencv-python
 pycocotools
 onnxruntime
 onnx
+flask
+flask_cors
+werkzeug

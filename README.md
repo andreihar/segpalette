@@ -2,7 +2,7 @@
 
 # SegPalette
 
-**Instance Recoloring by Palette Generation after Instance Segmentation**
+**Instance Recolouring by Palette Generation after Instance Segmentation**
 
 </div>
 
@@ -22,7 +22,15 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li><a href="#install">Install</a></li>
+    <li>
+      <a href="#install">Install</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#clone-repository">Clone Repository</a></li>
+        <li><a href="#frontend-setup">Frontend Setup</a></li>
+        <li><a href="#backend-setup">Backend Setup</a></li>
+      </ul>
+    </li>
   </ol>
 </details>
 
@@ -64,12 +72,6 @@ npm run dev
 ### Backend Setup
 
 Download pre-trained SAM model sam_vit_h_4b8939.pth from [here](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth) and place it in the `server` directory.
-
-Switch to your AI environoment.
-
-```bash
-conda activate <name_of_your_AI_environment>
-```
 
 Install dependencies and run the server
 

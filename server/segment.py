@@ -1,6 +1,5 @@
 import cv2
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
-import os
+from segment_anything import SamAutomaticMaskGenerator, sam_model_registry 
 
 def process_image(image_path: str) -> dict:
     print("Loading model...")
