@@ -13,6 +13,8 @@ import machuPicchuImage from '../assets/machu.jpg';
 import machuPicchuJson from '../assets/machu.json';
 
 function Canvas({ stageRef, setLoadMachuPicchu }) {
+  Modal.setAppElement('#root');
+
   // Redux state
   const palettes = useSelector((state) => state.palette.palettes);
   const overlayVisible = useSelector((state) => state.editor.overlayVisible);
@@ -176,6 +178,7 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
   // Handle JSON file load
   useEffect(() => {
     if (jsonData) {
+      console.log("Hello world blud")
       getMasks(jsonData)
         .then(base64Images => {
           const loadedImages = base64Images.map((base64Image, index) => {
@@ -189,13 +192,16 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
         })
         .catch(error => {
           toast.error('Error processing JSON file. Please make sure that the JSON file is a COCO segmentation file.');
+          dispatch(setJsonData(null));
+          setIsModalOpen(true);
+          setIsLoading(false);
         })
         .finally(() => {
           setIsLoading(false);
           setIsModalOpen(false);
         });
     }
-  }, [selectedImage, jsonData]);
+  }, [jsonData]);
 
   // Handle mask load
   useEffect(() => {

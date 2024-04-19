@@ -41,7 +41,7 @@ function Editor() {
           <div className="col-3">
             <Sidebar />
           </div>
-          <div className="col-8">
+          <div className="col-9 min-height" style={{ overflow: 'auto' }}>
             <Canvas stageRef={stageRef} setLoadMachuPicchu={setLoadMachuPicchu} />
           </div>
         </div>

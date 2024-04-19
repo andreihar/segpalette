@@ -4,9 +4,9 @@ function Navbar({ exportStage, downloadJson, loadMachuPicchu }) {
   const jsonData = useSelector(state => state.editor.jsonData);
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <nav className="navbar navbar-expand-lg navbar-light fixed-top">
       <div className="container">
-        <span className="navbar-brand">SegPalette</span>
+        <span className="navbar-brand text-primary fs-4">SegPalette</span>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbars" aria-controls="navbars" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon" />
         </button>
