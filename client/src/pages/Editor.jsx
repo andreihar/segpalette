@@ -11,7 +11,17 @@ function Editor() {
   const [loadMachuPicchu, setLoadMachuPicchu] = useState(null);
 
   const exportStage = () => {
-    const dataUrl = stageRef.current.toDataURL();
+    const stage = stageRef.current;
+    const { width, height } = stage.getClientRect(); // Get the dimensions of the content in the stage
+  
+    const dataUrl = stage.toDataURL({
+      x: 0,
+      y: 0,
+      width,
+      height,
+      pixelRatio: 3
+    });
+  
     const link = document.createElement('a');
     link.download = 'stage.png';
     link.href = dataUrl;
