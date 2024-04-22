@@ -12,12 +12,16 @@ const editorSlice = createSlice({
     setOverlayVisible: (state, action) => {
       state.overlayVisible = action.payload;
     },
+    setUpdateImage: (state,action) => {
+      state.overlayVisible = false;
+      state.updateImage = action.payload;
+    },
     setJsonData: (state, action) => {
       state.jsonData = action.payload;
     },
   },
 });
 
-export const { setOverlayVisible, setJsonData } = editorSlice.actions;
+export const { setOverlayVisible, setUpdateImage, setJsonData } = editorSlice.actions;
 
 export default editorSlice.reducer;
