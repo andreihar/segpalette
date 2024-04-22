@@ -1,31 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HuePicker } from 'react-color';
 import { useSelector, useDispatch } from 'react-redux';
-import { setPalettes } from '../redux/slices/paletteSlice';
-import { setOverlayVisible } from '../redux/slices/editorSlice';
+import { setNewPalettes } from '../redux/slices/paletteSlice';
+import { setOverlayVisible,setUpdateImage } from '../redux/slices/editorSlice';
 
 function Sidebar() {
-  const palettes = useSelector((state) => state.palette.palettes.palettes);
+  const oldPalettes = useSelector((state) => state.palette.palettes.palettes);
+  const newPalettes = useSelector((state) => state.palette.palettes.newPalettes);
+  const indexes = useSelector((state) =>  state.palette.palettes.index);
   const overlayVisible = useSelector((state) => state.editor.overlayVisible);
   const dispatch = useDispatch();
-
+  const [palettes, setPalettes] = useState(oldPalettes);
   const [selectedPaletteId, setSelectedPaletteId] = useState(null);
-
   const selectedPalette = palettes[selectedPaletteId];
 
-  const handleColourChange = (colourEvent) => {
-    const newPalettes = [...palettes];
-    newPalettes[selectedPaletteId] = colourEvent.hex;
-    dispatch(setPalettes({ index: state.palette.palettes.index, palettes: newPalettes })); 
+  useEffect(() => {
+    if(palettes.length === 0){
+      setPalettes(oldPalettes)
+    }
+    if(newPalettes.length === 0){
+      return;
+    }
+    setPalettes(newPalettes)
+  },[newPalettes, oldPalettes]);
+
+  const handleColourChange = (colourEvent, index) => {
+    const modPalettes = [...palettes];
+    modPalettes[index] = colourEvent.hex;
+    dispatch(setNewPalettes([...modPalettes]));
   };
 
   const handleFinishEditing = () => {
-    dispatch(setOverlayVisible(false));
+    dispatch(setUpdateImage(true));
   };
 
   const handleCancelEditing = () => {
     dispatch(setOverlayVisible(false));
   };
+
 
   return (
     <div className="d-flex flex-column flex-shrink-0 p-3 bg-light h-100 text-center">

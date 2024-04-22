@@ -3,7 +3,7 @@ import { Stage, Layer, Image as KonvaImage, Rect } from 'react-konva';
 import { generateColourPalette } from '../utils/generateColourPalette';
 import { useSelector, useDispatch } from 'react-redux';
 import { setPalettes } from '../redux/slices/paletteSlice';
-import { setOverlayVisible, setJsonData } from '../redux/slices/editorSlice';
+import { setOverlayVisible, setUpdateImage,setJsonData } from '../redux/slices/editorSlice';
 import { getMasks, getSegmentation } from '../services/PyService';
 import StyledDropzone from './StyledDropzone';
 import Modal from 'react-modal';
@@ -17,7 +17,11 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
 
   // Redux state
   const palettes = useSelector((state) => state.palette.palettes);
+  const indexes = useSelector((state) =>  state.palette.palettes.index);
   const overlayVisible = useSelector((state) => state.editor.overlayVisible);
+  const updateImage = useSelector((state) => {
+  console.log({state})
+  return state.editor.updateImage } )
   const jsonData = useSelector((state) => state.editor.jsonData);
   const dispatch = useDispatch();
 
@@ -30,11 +34,12 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
   const [overlaySegmentations, setOverlaySegmentations] = useState(null);
   const [overlaySegmentationsOpen, setOverlaySegmentationsOpen] = useState(true);
 
-  // Refs
+
   const maskRefs = useRef([]);
   const updatedImages = useRef([]);
 
-  // JSON file upload
+
+   // JSON file upload
   const onJsonFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -115,6 +120,7 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
     reader.readAsDataURL(file);
   }, []);
 
+
   // Create mask canvas
   const createMaskCanvas = (mask) => {
     const canvas = Object.assign(document.createElement('canvas'), { width: mask.width, height: mask.height });
@@ -140,6 +146,112 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
       }
     }
   };
+
+///////////////////////////////////////////////////////////////
+  function recolorPalette(indexList, oldPalette, newPalette) {
+  // Adjust chromaticity of the new color to match the old color's chromaticity
+  const adjustChromaticity = (oldColor, newColor) => {
+    const oldRgb = hexToRgb(oldColor);
+    const newRgb = hexToRgb(newColor);
+
+    // Calculate the difference in chromaticity
+    const dL = oldRgb.red - newRgb.red;
+    const dA = oldRgb.green - newRgb.green;
+    const dB = oldRgb.blue - newRgb.blue;
+
+    // Subtract the chromaticity difference from the new color
+    const r = Math.round(newRgb.red + dL);
+    const g = Math.round(newRgb.green + dA);
+    const b = Math.round(newRgb.blue + dB);
+
+    // Return the adjusted RGB values
+    return { red: isNaN(r) ? oldRgb.red : r, green: isNaN(g) ? oldRgb.green : g, blue: isNaN(b) ? oldRgb.blue : b };
+  };
+
+  // Convert hex color to RGB
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      red: parseInt(result[1], 16),
+      green: parseInt(result[2], 16),
+      blue: parseInt(result[3], 16)
+    } : null;
+  };
+
+  // Iterate through the index list and adjust the chromaticity for each color
+  const newColors = indexList.map(index => {
+    if (index >= 0 && index < newPalette.length) {
+      return adjustChromaticity(oldPalette[index], newPalette[index]);
+    }
+    // If the index is out of bounds, return a default color
+    return { red: 0, green: 0, blue: 0 }; // Default color (black)
+  });
+
+  return newColors;
+}
+
+
+  const applyRecoloring = () => {
+      if (!selectedSegmentation) return;
+
+      // Create a canvas to work with the image data
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = selectedSegmentation.width;
+      canvas.height = selectedSegmentation.height;
+
+      // Create a new canvas and context from the segmented mask
+      const { canvas: newCanvas, context: newContext } = createMaskCanvas(selectedSegmentation);
+      const imageData = newContext.getImageData(0, 0, newCanvas.width, newCanvas.height);
+
+      // Get the original image data
+      const originalCanvas = document.createElement('canvas');
+      const originalContext = originalCanvas.getContext('2d');
+      originalCanvas.width = selectedSegmentation.width;
+      originalCanvas.height = selectedSegmentation.height;
+      originalContext.drawImage(selectedImage, 0, 0);
+      const originalImageData = originalContext.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+
+      // Recolor the pixels within the segmented mask
+      const recolor = recolorPalette(indexes, palettes.palettes, palettes.newPalettes);
+      recolor.forEach((color, index) => {
+        if (imageData.data[index * 4 + 3] !== 0) { // Check if the pixel is part of the segmented mask
+          imageData.data[index * 4] = color.red;
+          imageData.data[index * 4 + 1] = color.green;
+          imageData.data[index * 4 + 2] = color.blue;
+          imageData.data[index * 4 + 3] = 255; // Set alpha channel to fully opaque
+        } else { // If the pixel is not part of the mask, leave it unchanged
+          imageData.data[index * 4] = originalImageData.data[index * 4];
+          imageData.data[index * 4 + 1] = originalImageData.data[index * 4 + 1];
+          imageData.data[index * 4 + 2] = originalImageData.data[index * 4 + 2];
+          imageData.data[index * 4 + 3] = originalImageData.data[index * 4 + 3];
+        }
+      });
+
+      // Put the modified image data back to the canvas
+      newContext.putImageData(imageData, 0, 0);
+
+      // Update selected image with recolored data
+      const recoloredImage = new Image();
+      recoloredImage.src = newCanvas.toDataURL();
+      recoloredImage.onload = () => {
+        setSelectedImage(recoloredImage);
+      };
+
+      console.log({recoloredImage});
+
+      // Reset updateImage state
+      dispatch(setUpdateImage(false));
+    };
+
+  useEffect(() => {
+      console.log({updateImage});
+      if(!updateImage) return;
+      applyRecoloring();
+
+  }, [updateImage]);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Generate Palette
   const canvas = document.createElement('canvas');
@@ -271,6 +383,7 @@ function Canvas({ stageRef, setLoadMachuPicchu }) {
   const toggleOverlay = () => {
     setOverlaySegmentationsOpen(!overlaySegmentationsOpen);
   };
+
 
   return (
     <>
