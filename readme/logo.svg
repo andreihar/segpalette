@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 60 60" height="60" width="60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<defs>
+		<path id="segment" d="M3,17C1,21,0,26,0,31c0,2,0,4,1,6h22L3,17z"/>
+	</defs>
+	<use xlink:href="#segment" transform="rotate(0, 30, 30)" fill="#3399FF"/>
+	<use xlink:href="#segment" transform="rotate(45, 30, 30)" fill="#E20074"/>
+	<use xlink:href="#segment" transform="rotate(90, 30, 30)" fill="#FF3333"/>
+	<use xlink:href="#segment" transform="rotate(135, 30, 30)" fill="#FF9933"/>
+	<use xlink:href="#segment" transform="rotate(180, 30, 30)" fill="#CCFF33"/>
+	<use xlink:href="#segment" transform="rotate(225, 30, 30)" fill="#33FF33"/>
+	<use xlink:href="#segment" transform="rotate(270, 30, 30)" fill="#33FF99"/>
+	<use xlink:href="#segment" transform="rotate(315, 30, 30)" fill="#33FFFF"/>
+</svg>
