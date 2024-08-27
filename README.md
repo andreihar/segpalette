@@ -48,11 +48,27 @@ A tool for recolouring images by generating segmented instances and applying cus
       <a href="#install">Install</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#clone-repository">Clone Repository</a></li>
         <li><a href="#frontend-setup">Frontend Setup</a></li>
         <li><a href="#backend-setup">Backend Setup</a></li>
       </ul>
     </li>
+    <li>
+      <a href="#functional-areas">Functional Areas</a>
+      <ul>
+        <li><a href="#instance-segmentation">Instance Segmentation</a></li>
+        <li><a href="#colour-palette-generation">Colour Palette Generation</a></li>
+        <li><a href="#recolouring">Recolouring</a></li>
+        <li><a href="#web-application">Web Application</a></li>
+        <li>
+          <a href="#matlab-recolouring">MATLAB Recolouring</a>
+          <ul>
+            <li><a href="#run">Run</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#contributors">Contributors</a></li>
+    <li><a href="#licence">Licence</a></li>
   </ol>
 </details>
 
@@ -61,7 +77,11 @@ A tool for recolouring images by generating segmented instances and applying cus
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-SegPalette is a tool for instance recolouring, employing a novel approach of palette generation post-instance segmentation. It aims to enhance the visual aesthetics of segmented instances by applying customised colour palettes.
+SegPalette is the final project created by a group of students for the course in Computational Photography and Image Manipulation during the Spring semester of 2024. The project was designed with the goal of exploring advanced image processing techniques to create an intuitive tool for selective image recolouring, aimed at both casual users and professionals in fields like fashion design, home decor, and digital art.
+
+The primary motivation behind SegPalette was to address the limitations of existing recolouring tools, which often lack the precision required for segment-specific colour adjustments. By using cutting-edge technologies like the Segment Anything Model (SAM) from Meta AI and integrating them into a user-friendly web application, SegPalette allows users to easily recolour individual objects within an image without altering the rest of the scene. This level of control opens up new possibilities for creative expression, enabling users to experiment with colours in a way that is both accessible and visually accurate.
+
+Despite challenges, including the incomplete implementation of the recolouring feature within the web app, the team successfully demonstrated the feasibility of their approach through MATLAB simulations. SegPalette stands as a testament to the team's innovative spirit and technical skills, offering a promising foundation for future development in selective image recolouring.
 
 ### Built With
 
@@ -77,12 +97,6 @@ SegPalette is a tool for instance recolouring, employing a novel approach of pal
 ### Prerequisites
 - Node.js (v14.x or later)
 - Python (v3.7 or later)
-
-### Clone Repository
-```bash
-git clone https://github.com/andreihar/cmpt461.git
-cd cmpt461
-```
 
 ### Frontend Setup
 ```bash
@@ -181,6 +195,22 @@ Once you have the binary masks, load the `palette_demo.m` script in MATLAB and f
 
 
 
+<!-- CONTRIBUTION -->
+## Contributors
+
+- Brendan Bickford ([Github][brendan-github]) - Theoretical framework, MATLAB palette generation and recolouring, web app palette generation, video presentation, project report.
+- Andrei Harbachov ([Github][andrei-github] · [LinkedIn][andrei-linkedin]) - Web app development (excluding palette generation and recolouring), video presentation, project report, video editing.
+- Carolina Partida Bujanda ([Github][carolina-github]) - Web app recolouring.
+
+
+
+<!-- LICENCE -->
+## Licence
+
+Because SegPalette is MIT-licensed, any developer can essentially do whatever they want with it as long as they include the original copyright and licence notice in any copies of the source code.
+
+
+
 <!-- MARKDOWN LINKS -->
 <!-- Badges and their links -->
 [contributors-badge]: https://img.shields.io/github/contributors/andreihar/segpalette?style=for-the-badge&color=44cc11
@@ -193,3 +223,9 @@ Once you have the binary masks, load the `palette_demo.m` script in MATLAB and f
 [flask]: https://flask.palletsprojects.com/
 [pytorch-badge]: https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white
 [pytorch]: https://pytorch.org/
+
+<!-- Socials -->
+[brendan-github]: https://github.com/BrenBick
+[andrei-linkedin]: https://www.linkedin.com/in/andreihar/
+[andrei-github]: https://github.com/andreihar
+[carolina-github]: https://github.com/caropartida
