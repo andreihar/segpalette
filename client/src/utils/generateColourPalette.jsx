@@ -19,7 +19,7 @@ export const generateColourPalette = (imageData) => {
     return Math.sqrt(sum);
   }
 
-  // Check if color is black, return true if it is not black
+  // Check if colour is black, return true if it is not black
   function notBlack(colour) {
     for (let i = 0; i < colour.length; i++) {
       if (colour[i] !== 0) {
@@ -95,7 +95,7 @@ export const generateColourPalette = (imageData) => {
     return { centroids, finalClusterIndex };
   }
 
-  // Convert RGB color to HEX color
+  // Convert RGB colour to HEX colour
   function rgbToHex(colour) {
     const r = Math.round(colour[0]);
     const g = Math.round(colour[1]);
