@@ -1,8 +1,30 @@
+<!-- PROJECT LOGO -->
 <div align="center">
-
+  <a href="https://github.com/andreihar/segpalette">
+	<img src="readme/logo.svg" alt="Logo" width="80" height="80">
+  </a>
+  
 # SegPalette
 
+
+
+<!-- PROJECT SHIELDS -->
+[![Contributors][contributors-badge]][contributors]
+[![Licence][licence-badge]][licence]
+
 **Instance Recolouring by Palette Generation after Instance Segmentation**
+
+A tool for recolouring images by generating segmented instances and applying customised colour palettes to enhance visual appeal.
+
+<div style="position: relative; max-width: 600px;">
+  <a href="https://youtu.be/7FBLZdGhSWw">
+	<img src="https://img.youtube.com/vi/7FBLZdGhSWw/maxresdefault.jpg" style="width: 100%;">
+	<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF99;"></div>
+	<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+	  <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/View-playback_Gion_simple.svg" style="width: 75px">
+	</div>
+  </a>
+</div>
 
 </div>
 
@@ -87,6 +109,10 @@ The website can be accessed through the URL `http://localhost:5173/`.
 
 <!-- MARKDOWN LINKS -->
 <!-- Badges and their links -->
+[contributors-badge]: https://img.shields.io/github/contributors/andreihar/segpalette?style=for-the-badge&color=44cc11
+[contributors]: #contributors
+[licence-badge]: https://img.shields.io/github/license/andreihar/segpalette.svg?color=000000&style=for-the-badge
+[licence]: LICENSE
 [react-badge]: https://img.shields.io/badge/React-087EA4?style=for-the-badge&logo=react&logoColor=ffffff
 [react]: https://react.dev/
 [flask-badge]: https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white
